@@ -126,18 +126,29 @@
 
 + (NSString*)encryptBase64String:(NSString*)string keyString:(NSString*)keyString separateLines:(BOOL)separateLines
 {
-    NSData* data = [self encryptData:[string dataUsingEncoding:NSUTF8StringEncoding]
-                                 key:[keyString dataUsingEncoding:NSUTF8StringEncoding]
-                                  iv:nil];
-    return [data base64EncodedStringWithSeparateLines:separateLines];
+    return [self encryptBase64String:string keyString:keyString iv:nil separateLines:separateLines];
 }
 
 + (NSString*)decryptBase64String:(NSString*)encryptedBase64String keyString:(NSString*)keyString
 {
+    return [self decryptBase64String:encryptedBase64String keyString:keyString iv:nil];
+}
+
++ (NSString *)encryptBase64String:(NSString *)string keyString:(NSString *)keyString iv:(NSData *)iv separateLines:(BOOL)separateLines
+{
+    NSData* data = [self encryptData:[string dataUsingEncoding:NSUTF8StringEncoding]
+                                 key:[keyString dataUsingEncoding:NSUTF8StringEncoding]
+                                  iv:iv];
+    return [data base64EncodedStringWithSeparateLines:separateLines];
+
+}
+
++ (NSString *)decryptBase64String:(NSString *)encryptedBase64String keyString:(NSString *)keyString iv:(NSData *)iv
+{
     NSData* encryptedData = [NSData dataFromBase64String:encryptedBase64String];
     NSData* data = [self decryptData:encryptedData
                                  key:[keyString dataUsingEncoding:NSUTF8StringEncoding]
-                                  iv:nil];
+                                  iv:iv];
     if (data) {
         return [[[NSString alloc] initWithData:data
                                       encoding:NSUTF8StringEncoding] autorelease];
@@ -145,7 +156,6 @@
         return nil;
     }
 }
-
 
 #define FBENCRYPT_IV_HEX_LEGNTH (FBENCRYPT_BLOCK_SIZE*2)
 
