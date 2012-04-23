@@ -36,6 +36,15 @@
 #pragma mark -
 #pragma mark API
 
++ (NSData *)defaultIV {
+    static NSMutableData *data = nil;
+    if (data == nil) {
+        unichar iv[16] = {0};
+        data = [[NSMutableData alloc] initWithBytes:&iv length:16];
+    }
+    return data;
+}
+
 + (NSData*)encryptData:(NSData*)data key:(NSData*)key iv:(NSData*)iv;
 {
     NSData* result = nil;
@@ -119,10 +128,8 @@
         free(buffer);
         NSLog(@"[ERROR] failed to decrypt| CCCryptoStatus: %d", cryptStatus);
     }
-
 	return result;
 }
-
 
 + (NSString*)encryptBase64String:(NSString*)string keyString:(NSString*)keyString separateLines:(BOOL)separateLines
 {
@@ -136,6 +143,9 @@
 
 + (NSString *)encryptBase64String:(NSString *)string keyString:(NSString *)keyString iv:(NSData *)iv separateLines:(BOOL)separateLines
 {
+    if (iv == nil)
+        iv = [self defaultIV];
+    
     NSData* data = [self encryptData:[string dataUsingEncoding:NSUTF8StringEncoding]
                                  key:[keyString dataUsingEncoding:NSUTF8StringEncoding]
                                   iv:iv];
@@ -145,6 +155,9 @@
 
 + (NSString *)decryptBase64String:(NSString *)encryptedBase64String keyString:(NSString *)keyString iv:(NSData *)iv
 {
+    if (iv == nil)
+        iv = [self defaultIV];
+    
     NSData* encryptedData = [NSData dataFromBase64String:encryptedBase64String];
     NSData* data = [self decryptData:encryptedData
                                  key:[keyString dataUsingEncoding:NSUTF8StringEncoding]
